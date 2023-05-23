@@ -1,36 +1,35 @@
 package hr.fer.ChatbotService.models;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
-import java.util.List;
+import java.util.ArrayList;
 
-//@Entity
-//@Table
+@Entity
+@Table(name = "chats")
 public class Chat {
-//
-//    @Id
-//    private Integer userId;
-//    private List<Message> chatMessages;
-//
-//
-//    public Chat() {
-//    }
-//
-//    public Integer getUserId() {
-//        return userId;
-//    }
-//
-//    public void setUserId(Integer userId) {
-//        this.userId = userId;
-//    }
-//
-//    public List<Message> getChatMessages() {
-//        return chatMessages;
-//    }
-//
-//    public void addMessage(Message chatMessage) {
-//        this.chatMessages.add(chatMessage);
-//    }
+
+    @Id
+    @Column(name = "chat_user_id")
+    private String userId;
+    private ArrayList<String> allMessages;
+
+
+    public Chat() {
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
+
+    public ArrayList<String> getAllMessages() {
+        return allMessages;
+    }
+
+    public void setAllMessages(ArrayList<String> allMessages) {
+        this.allMessages = allMessages;
+    }
 }
