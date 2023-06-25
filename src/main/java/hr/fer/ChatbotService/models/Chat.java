@@ -32,4 +32,12 @@ public class Chat {
     public void setAllMessages(ArrayList<String> allMessages) {
         this.allMessages = allMessages;
     }
+
+    @Override
+    public String toString() {
+        return "Chat{" +
+                "userId='" + userId + '\'' +
+                ", allMessages=" + allMessages +
+                '}';
+    }
 }

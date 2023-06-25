@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
@@ -19,7 +20,6 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -35,28 +35,29 @@ public class MessageController {
     @Autowired
     private ChatRepository chatRepository;
 
+
+
     private static final URI CHATGPT_URI = URI.create("https://api.openai.com/v1/chat/completions");
     private HttpClient client = HttpClient.newHttpClient();
 
 
     @GetMapping("/{id}")
-    public Optional<Chat> getAllMessagesForId(@PathVariable String id) {
-//        ArrayList<String> tmp = new ArrayList<>();
-//        tmp.add("hello");
-//        tmp.add("user");
-//        tmp.add(id);
-//        return tmp;
+    public ResponseEntity<String> getAllMessagesForId(@PathVariable String id) {
 
-        return chatRepository.findById(id);
+        Optional<Chat> chat = chatRepository.findById(id);
+        if (chat.isEmpty()) {
+            return ResponseEntity.ok("Chat with given id doesn't exist");
+        }
+        return ResponseEntity.ok(chat.toString().substring(9, chat.toString().length() - 1));
     }
 
     @PostMapping(path = "/")
     public String newChatMessage(@RequestBody Message message) throws Exception {
         String response = "";
         String userId = message.getFrom();
-        if (message.getText().equals("close")
-                || message.getText().equals("close conversation")
-                || message.getText().equals("exit")) {
+        if (message.getText().equalsIgnoreCase("close")
+                || message.getText().equalsIgnoreCase("close conversation")
+                || message.getText().equalsIgnoreCase("exit")) {
 
             response = "Conversation ended";
             chatRepository.deleteAllById(Collections.singleton(userId));
@@ -81,21 +82,20 @@ public class MessageController {
             for (String s : chat.getAllMessages()) {
                 messages.add(s);
             }
-            messages.add("user:\t" + message.getText());
-            messages.add("chatbot:\t" + response);
+            messages.add("user:" + message.getText());
+            messages.add("chatbot:" + response);
             chat.setAllMessages(messages);
             chatRepository.save(chat);
         } else {
             Chat chat = new Chat();
             chat.setUserId(userId);
-            messages.add("user:\t" + message.getText());
-            messages.add("chatbot:\t" + response);
+            messages.add("user:" + message.getText());
+            messages.add("chatbot:" + response);
             chat.setAllMessages(messages);
             chatRepository.save(chat);
         }
         return response;
     }
-
 
     private String chatWithGpt(String message) throws Exception {
         var request = HttpRequest.newBuilder()
@@ -112,7 +112,7 @@ public class MessageController {
 
 
     private HttpRequest.BodyPublisher postMessage(String message) throws JsonProcessingException {
-        var completion = Completion.defaultValue(message);
+        var completion = Completion.defaultWith(message);
         return HttpRequest.BodyPublishers.ofString(jsonMapper.writeValueAsString(completion));
     }
 
